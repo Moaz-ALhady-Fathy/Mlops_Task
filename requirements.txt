@@ -4,3 +4,4 @@ transformers
 torch
 python-multipart
 jinja2
+prometheus_client
