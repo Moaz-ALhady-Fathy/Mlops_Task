@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't increase width */
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 100px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e9e9e9;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sentiment Analysis</h1>
+        <p>Enter text below to get its sentiment prediction:</p>
+
+        <textarea id="inputText" placeholder="Type your text here..."></textarea><br>
+        <button onclick="predictSentiment()">Analyze Sentiment</button>
+
+        <h2>Prediction Result:</h2>
+        <pre id="result">Waiting for input...</pre>
+    </div>
+
+    <script>
+        async function predictSentiment() {
+            const inputText = document.getElementById('inputText').value;
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = "Analyzing...";
+
+            if (!inputText.trim()) {
+                resultElement.textContent = "Please enter some text.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: inputText })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultElement.innerHTML = `
+                    **Original Text:** ${data.text}<br><br>
+                    **Prediction:** <span style="color: ${data.prediction === 'POSITIVE' ? 'green' : 'red'}; font-weight: bold;">${data.prediction}</span><br>
+                    **Confidence:** ${data.confidence.toFixed(4)}
+                `;
+            } catch (error) {
+                console.error("Error during prediction:", error);
+                resultElement.textContent = `Error: Could not get prediction. ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
